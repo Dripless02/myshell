@@ -17,15 +17,16 @@ extern char** environ;
 int pid, status, error;
 void clear()
 {
-    if((pid = fork())==0){
-        error= execlp("clear", "clear", NULL);
+    if((pid = fork())==0){                      // child proccess
+        error= execlp("clear", "clear", NULL);  // exec clear command
         if(error!=0){
-            printf(" %s \n", "Cannot clear");
+            printf(" %s \n", "Cannot clear");   // error message
     }
         }else{
-            waitpid(pid, &status, 0);
+            wait(&status);
     }
 }
+
 void greeting()
 {
     clear();
@@ -56,7 +57,7 @@ void envir()
 {
     for(int i=0;environ[i]; i++) //   for each line where the environment exists
     {
-        printf("%s \n",environ[i]);
+        printf("%s \n",environ[i]); // print the environment
     }
     
 }
@@ -64,11 +65,11 @@ void envir()
 void dir(char * S_path, char ** args){
 int pid, error, status;
     if((pid = fork())==0){
-        if (!args[1]){         // if no second argument exists
-            error = execlp("ls", "ls", "-al", S_path, NULL); // excute the ls command with the path
+        if (!args[1]){                                              // if no second argument exists
+            error = execlp("ls", "ls", "-al", S_path, NULL);        // excute the ls command with the path
             }
         else{
-           error = execlp("ls", "ls", "-al", args[1], NULL); // execute the ls command with the argument
+           error = execlp("ls", "ls", "-al", args[1], NULL);        // execute the ls command with the argument
 
         }
         if(error < 0){
@@ -76,6 +77,6 @@ int pid, error, status;
         }
     }
     else{
-        waitpid(pid, &status, 0);
+        wait(&status);
     }   
 }

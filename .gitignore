@@ -3,3 +3,7 @@ src/ex.c
 src/ex
 src/myshell
 src/nul
+src/keep.c
+src/keep2.c
+src/input.txt
+src/a.txt
