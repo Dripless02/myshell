@@ -6,3 +6,5 @@ void cd();
 void clear();
 void envir();
 void dir();
+void othercommands();
+void help();

@@ -29,6 +29,8 @@ void clear()
 
 void greeting()
 {
+
+    sleep(2);
     clear();
     printf("\n\n\n\n******************" // initial message
         "***************************");
@@ -79,4 +81,28 @@ int pid, error, status;
     else{
         wait(&status);
     }   
+}
+
+void othercommands(char * argument, char **args){
+    if((pid = fork())==0){                      // 
+        error= execvp(argument, args);  
+        if(error!=0){
+            printf(" %s \n", "Command not found!");   // error message
+            exit(0);
+    }
+        }else{
+            wait(&status);
+    }
+}
+
+void help()
+{
+    if((pid = fork())==0){                      // child proccess
+        error= execlp("more", "more", "../manual/readme.md",  NULL);  // exec clear command
+        if(error!=0){
+            printf(" %s \n", "Cannot clear");   // error message
+    }
+        }else{
+            wait(&status);
+    }
 }
