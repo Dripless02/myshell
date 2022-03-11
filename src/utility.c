@@ -1,3 +1,6 @@
+// Afolabi Fatogun 20409054
+// I acknowledge DCU's academic integrity policy
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +23,7 @@ void clear()
     if((pid = fork())==0){                      // child proccess
         error= execlp("clear", "clear", NULL);  // exec clear command
         if(error!=0){
-            printf(" %s \n", "Cannot clear");   // error message
+            printf(" %s \n", "Cannot clear");   // if the fork fails, error message
     }
         }else{
             wait(&status);
@@ -30,79 +33,212 @@ void clear()
 void greeting()
 {
 
-    sleep(2);
+    sleep(1);
     clear();
-    printf("\n\n\n\n******************" // initial message
-        "***************************");
-    printf("\n\n\t********MY FIRST SHELL**********");
-    printf("\n\n\t***********-ENJOY!**************");
-    printf("\n\n\n\n*******************"
-        "**************************");
+    printf("\n\n\n*********************************************");
+    printf("\n\n**************MY FIRST SHELL*****************");
+    printf("\n\n*************AFOLABI FATOGUN*****************");
+    printf("\n\n*********************************************");
     printf("\n");
 }
 
 void cd(char *d){
     
-    chdir(d); // change the directory
-    char cwd[1024]; // holder for current directory
-    setenv("PWD", getcwd(cwd, sizeof(cwd)),1); //set new pwd
+    chdir(d);                                       // change the directory
+    char cwd[1024];                                 // holder for current directory
+    setenv("PWD", getcwd(cwd, sizeof(cwd)),1);      //set new pwd
 }
 
 void prompt()
 {
-    char cwd[256];  // initialize the size of the cwd
-    getcwd(cwd, sizeof(cwd)); 
-    printf("<%s>", cwd);
+char cwd[256];                                      // initialize the size of the cwd
+    getcwd(cwd, sizeof(cwd));                       // get current working directory
+    printf("<%s>", cwd);                            // print
 }
 
-void envir()
+void envir(char ** args, int track)
 {
-    for(int i=0;environ[i]; i++) //   for each line where the environment exists
-    {
-        printf("%s \n",environ[i]); // print the environment
-    }
-    
-}
+    int k = 0;
+    int status;
+    switch (fork()){
+        case -1:
+        fprintf(stderr, "error forking");
+        case 0:
+        
+        while(args[k]){
+        if (!strcmp(args[k], "<")){                     // checks for pipe symbol
+                freopen(args[k+1], "r", stdin);         //opens the file after the pipe symbol and reads from it
+                args[k] = NULL;                         // make args[k] null to avoid problems
 
-void dir(char * S_path, char ** args){
-int pid, error, status;
-    if((pid = fork())==0){
-        if (!args[1]){                                              // if no second argument exists
-            error = execlp("ls", "ls", "-al", S_path, NULL);        // excute the ls command with the path
             }
-        else{
-           error = execlp("ls", "ls", "-al", args[1], NULL);        // execute the ls command with the argument
+            else if (!strcmp(args[k], ">")){            // checks for pipe symbol
+                freopen(args[k+1], "w", stdout);        //opens the file after the pipe symbol and writes to it
+                args[k] = NULL;                         // make args[k] null to avoid problems
+                break;
+            }
+            else if (!strcmp(args[k], ">>")){           // checks for pipe symbol
+                freopen(args[k+1], "a", stdout);        //opens the file after the pipe symbol and appends to it
+                args[k] = NULL;                         // make args[k] null to avoid problems
+                break;
+            }
+            k++;
 
         }
-        if(error < 0){
-            printf("error code = %d\n", errno); // error code if the directory does not exist
-        }
-    }
-    else{
-        wait(&status);
-    }   
-}
 
-void othercommands(char * argument, char **args){
-    if((pid = fork())==0){                      // 
-        error= execvp(argument, args);  
-        if(error!=0){
-            printf(" %s \n", "Command not found!");   // error message
-            exit(0);
-    }
-        }else{
+    for(int i=0;environ[i]; i++)                        //   for each line where the environment exists
+        {
+        printf("%s \n",environ[i]);                     // print the environment
+        }
+    freopen("/dev/tty", "a", stdout);                   // reopen and close the file after execution
+    _exit(0);                                           // exit child process
+        
+        default:
+            if(track == 0){                             // if the command has not been marked for background execution
             wait(&status);
+            }
+    }
+}
+    
+
+
+void dir(char * S_path, char ** args, int track){
+    int k = 0;
+    int status;
+    switch (fork()){
+        case -1:
+        fprintf(stderr, "error forking");
+        case 0:
+        
+        while(args[k]){
+            if (!strcmp(args[k], "<")){                     // checks for pipe symbol
+                freopen(args[k+1], "r", stdin);             //opens the file after the pipe symbol and reads from it
+                args[k] = NULL;                             // make args[k] null to avoid problems
+
+            }
+            else if (!strcmp(args[k], ">")){                // checks for pipe symbol
+                freopen(args[k+1], "w", stdout);            //opens the file after the pipe symbol and writes to it
+                args[k] = NULL;                             // make args[k] null to avoid problems
+                break;
+            }
+            else if (!strcmp(args[k], ">>")){               // checks for pipe symbol
+                freopen(args[k+1], "a", stdout);            //opens the file after the pipe symbol and appends to it
+                args[k] = NULL;                             // make args[k] null to avoid problems
+                break;
+            }
+            k++;
+
+        }
+        if (!args[1]){                                      // if no second argument exists
+            execlp("ls", "ls", "-al", S_path, NULL);        // excute the ls -al command with the path
+                }
+        else if (args[1]){
+            execlp("ls", "ls", "-al", args[1], NULL);        // execute the ls -al command with the argument
+
+            }
+        freopen("/dev/tty", "a", stdout);                   // reopen and close the file after execution
+        _exit(0);                                           // exit child process
+        
+        default:
+        if (track == 0){                                    // if the command has not been marked for background execution
+            wait(&status);
+        }
     }
 }
 
-void help()
+
+void help(char ** args, int track)
 {
-    if((pid = fork())==0){                      // child proccess
-        error= execlp("more", "more", "../manual/readme.md",  NULL);  // exec clear command
-        if(error!=0){
-            printf(" %s \n", "Cannot clear");   // error message
-    }
-        }else{
+    int k = 0;
+    int status;
+    switch (fork()){
+        case -1:
+        fprintf(stderr, "error forking");               // error message
+        case 0:                                         // child process
+        
+        while(args[k]){
+            if (!strcmp(args[k], "<")){                 // checks for pipe symbol
+                freopen(args[k+1], "r", stdin);         //opens the file after the pipe symbol and reads from it
+                args[k] = NULL;                         //set the pipe to null
+
+            }
+            else if (!strcmp(args[k], ">")){            // checks for pipe symbol
+                freopen(args[k+1], "w", stdout);        //opens the file after the pipe symbol and writes to it
+                args[k] = NULL;                         //set the pipe to null
+                break;
+            }
+            else if (!strcmp(args[k], ">>")){           // checks for pipe symbol
+                freopen(args[k+1], "a", stdout);        //opens the file after the pipe symbol and appends to it
+                args[k] = NULL;                         // set the pipe to null
+                break;
+            }
+            k++;
+            execlp("more", "more", "../manual/readme.md",  NULL);
+
+        }
+
+
+        
+        default:
+        if (track == 0){                                // if the command has not been marked for background execution
             wait(&status);
+        }
     }
+}
+
+void echo(char ** args, int track){
+    int k = 0;
+    int status;
+    char ** arg;
+    switch (fork()){
+        case -1:
+        fprintf(stderr, "error forking");           // error message
+        case 0:                                     // child process
+        
+        while(args[k]){
+            if (!strcmp(args[k], "<")){             // checks for pipe symbol
+                freopen(args[k+1], "r", stdin);     //opens the file after the pipe symbol and reads from it
+                args[k] = NULL;
+
+            }
+            else if (!strcmp(args[k], ">")){        // checks for pipe symbol
+                freopen(args[k+1], "w", stdout);    //opens the file after the pipe symbol and writes to it
+                args[k] = NULL;
+                break;
+            }
+            else if (!strcmp(args[k], ">>")){       // checks for pipe symbol
+                freopen(args[k+1], "a", stdout);    //opens the file after the pipe symbol and appends to it
+                args[k] = NULL;
+                break;
+            }
+            k++;
+
+        }
+        arg = &args[1];                         // define arg as pointer to args[1]
+        while(*arg)
+            fprintf(stdout,"%s ",*arg++);       // while the arguments from arg[1] onwards exist, print them to stdout
+        fprintf(stdout,"\n");
+        freopen("/dev/tty", "a", stdout);           // reopen the last file 
+        _exit(0);
+
+        
+        default:
+        if (track == 0){                        // if the command has not been marked for background execution
+            wait(&status);
+        }
+    }
+}
+
+int backgroundExec(char ** args){
+    int j = 0;                          
+    int track = 0;
+    while(args[j]){                             // while j
+        if (!strcmp (args[j], "&")){            // if the ampersand symbol exists in the argument
+            track = 1;                          // track = 1
+            args[j] = NULL;             
+
+        }
+
+        j++;
+    }
+    return track;                               // return track number
 }
