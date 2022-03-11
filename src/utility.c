@@ -151,6 +151,7 @@ void help(char ** args, int track)
     int k = 0;
     int status;
     switch (fork()){
+        //https://man7.org/linux/man-pages/man2/fork.2.html
         case -1:
         fprintf(stderr, "error forking");               // error message
         case 0:                                         // child process

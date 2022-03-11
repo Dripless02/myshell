@@ -76,6 +76,7 @@ if (argument){                             // if there's anything there
 
     }
     else{
+        // https://www.geeksforgeeks.org/io-redirection-c/
         int k = 0;
         int status;
         switch (fork()){
@@ -103,7 +104,7 @@ if (argument){                             // if there's anything there
 
             }
             execvp(args[0], args);                          // execute external commands
-            _exit(0);                          
+            _exit(0);                                       // https://man7.org/linux/man-pages/man2/exit.2.html                   
             if (track == 0){                                // if the command has not been marked for background execution
                 wait(&status);
             }
