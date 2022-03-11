@@ -150,6 +150,7 @@ void help(char ** args, int track)
 {
     int k = 0;
     int status;
+    
     switch (fork()){
         //https://man7.org/linux/man-pages/man2/fork.2.html
         case -1:
@@ -173,7 +174,8 @@ void help(char ** args, int track)
                 break;
             }
             k++;
-            execlp("more", "more", "../manual/readme.md",  NULL);
+
+            execlp("more", "more", strcat(getenv("STARTPWD"), "/../manual/readme.md"),  NULL);  // using the more variable 
 
         }
 
@@ -226,7 +228,7 @@ void echo(char ** args, int track){
         if (track == 0){                        // if the command has not been marked for background execution
             wait(&status);
         }
-    }
+    } 
 }
 
 int backgroundExec(char ** args){

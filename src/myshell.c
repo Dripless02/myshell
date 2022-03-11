@@ -154,7 +154,10 @@ void tokenize(int argc, char ** argv)
         
 
 int main (int argc, char ** argv)
-{
+{   
+    char readme_path[1024];
+    setenv("STARTPWD", getcwd(readme_path, sizeof(readme_path)), 1); // set an environment variable when the program is run to be used for the help command
+
     greeting();                                     // call the greeting function
     tokenize(argc, argv);                           // calls the tokenize function
     return 0;
